@@ -1,0 +1,71 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Google Cloud SDK (로컬 설치 파일 — 커밋 불필요)
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz
+
+# Google Cloud 서비스 계정 키
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig*.json
+!components.json
+
+# OCR 테스트용 영수증 이미지 (실제 데이터 — 커밋 금지)
+ocr-server/receipts/
+
+# 개발/테스트 전용 도구 (커밋 불필요)
+_dev-tools/
+
+# Claude Code 설정 (로컬 전용)
+.claude/
+
+# 내부 문서 및 Claude Code 설정
+PROJECT_STATUS.md
+TODO.md
+AGENTS.md
+CLAUDE.md
+
+# Supabase 마이그레이션 (대시보드에서 직접 적용)
+supabase/
