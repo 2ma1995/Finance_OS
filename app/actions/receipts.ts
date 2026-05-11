@@ -125,10 +125,15 @@ export async function approveReceipt(receiptId: string) {
   const auth = await requireRole(['finance', 'ceo'])
   if (!auth) return { error: '권한이 없습니다.' }
 
-  // 재무팀: 직원 영수증만 / CEO: 재무팀 영수증만
+  // 재무팀: staff·ceo 영수증 / CEO: finance 영수증 + 본인(ceo) 영수증
+  const db0 = rawSupabase(auth.supabase)
+  const { data: target0 } = await db0
+    .from('receipts').select('employee_id').eq('id', receiptId).single() as { data: { employee_id: string } | null }
+  if (!target0) return { error: '영수증을 찾을 수 없습니다.' }
+
   const submitterRole = await getSubmitterRole(auth.supabase as never, receiptId)
-  if (auth.role === 'finance' && submitterRole !== 'staff') return { error: '권한이 없습니다.' }
-  if (auth.role === 'ceo' && submitterRole !== 'finance') return { error: '권한이 없습니다.' }
+  if (auth.role === 'finance' && !['staff', 'ceo'].includes(submitterRole ?? '')) return { error: '권한이 없습니다.' }
+  if (auth.role === 'ceo' && submitterRole !== 'finance' && target0.employee_id !== auth.user.id) return { error: '권한이 없습니다.' }
 
   const supabase = auth.supabase
   const { data: empData } = await supabase
@@ -185,7 +190,7 @@ export async function updateReceipt(
     }
   } else if (auth.role === 'ceo') {
     // 본인 영수증(pending)이거나, 재무팀(finance) 영수증만
-    const isOwn = existing.employee_id === auth.user.id && existing.status === 'pending'
+    const isOwn = existing.employee_id === auth.user.id
     if (!isOwn) {
       const submitterRole = await getSubmitterRole(auth.supabase as never, receiptId)
       if (submitterRole !== 'finance') return { error: '수정 권한이 없습니다.' }
@@ -208,10 +213,15 @@ export async function rejectReceipt(receiptId: string, comment: string) {
   const auth = await requireRole(['finance', 'ceo'])
   if (!auth) return { error: '권한이 없습니다.' }
 
-  // 재무팀: 직원 영수증만 / CEO: 재무팀 영수증만
+  // 재무팀: staff·ceo 영수증 / CEO: finance 영수증 + 본인(ceo) 영수증
+  const db0r = rawSupabase(auth.supabase)
+  const { data: target0r } = await db0r
+    .from('receipts').select('employee_id').eq('id', receiptId).single() as { data: { employee_id: string } | null }
+  if (!target0r) return { error: '영수증을 찾을 수 없습니다.' }
+
   const submitterRole = await getSubmitterRole(auth.supabase as never, receiptId)
-  if (auth.role === 'finance' && submitterRole !== 'staff') return { error: '권한이 없습니다.' }
-  if (auth.role === 'ceo' && submitterRole !== 'finance') return { error: '권한이 없습니다.' }
+  if (auth.role === 'finance' && !['staff', 'ceo'].includes(submitterRole ?? '')) return { error: '권한이 없습니다.' }
+  if (auth.role === 'ceo' && submitterRole !== 'finance' && target0r.employee_id !== auth.user.id) return { error: '권한이 없습니다.' }
 
   const supabase = auth.supabase
   const db = rawSupabase(supabase)
