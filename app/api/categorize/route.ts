@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase-server'
 
 const OCR_SERVER_URL = process.env.OCR_SERVER_URL ?? 'http://localhost:8000'
 
@@ -68,11 +69,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '유효하지 않은 이미지 URL입니다.' }, { status: 400 })
   }
 
+  // private 버킷: public URL이면 OCR 서버가 접근할 수 있도록 signed URL로 교체
+  let ocrUrl = imageUrl
+  const publicPathMatch = imageUrl.match(/\/storage\/v1\/object\/public\/receipts\/(.+)$/)
+  if (publicPathMatch) {
+    const { data } = await createServiceClient()
+      .storage
+      .from('receipts')
+      .createSignedUrl(publicPathMatch[1], 300)
+    if (data?.signedUrl) ocrUrl = data.signedUrl
+  }
+
   try {
     const ocrRes = await fetch(`${OCR_SERVER_URL}/ocr`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image_url: imageUrl }),
+      body: JSON.stringify({ image_url: ocrUrl }),
     })
     if (!ocrRes.ok) throw new Error(`OCR 서버 오류 ${ocrRes.status}`)
 
