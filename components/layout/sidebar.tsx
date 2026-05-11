@@ -19,7 +19,7 @@ import { signOut } from "@/app/actions/auth"
 
 const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; roles: EmployeeRole[] }[] = [
   { href: "/dashboard",    label: "대시보드",  icon: LayoutDashboard, roles: ["ceo"] },
-  { href: "/approvals",    label: "결재 관리",  icon: CheckSquare,     roles: ["ceo", "finance"] },
+  { href: "/approvals",    label: "결재 관리",  icon: CheckSquare,     roles: ["ceo"] },
   { href: "/submit",       label: "지출 신청",  icon: Receipt,         roles: ["ceo", "staff", "finance"] },
   { href: "/transactions", label: "거래 내역",  icon: ArrowLeftRight,  roles: ["ceo", "finance"] },
   { href: "/budgets",      label: "예산 관리",  icon: PiggyBank,       roles: ["ceo", "finance"] },

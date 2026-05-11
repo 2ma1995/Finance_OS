@@ -103,7 +103,7 @@ export async function submitReceipt(data: Omit<ReceiptInsert, 'employee_id' | 'e
 }
 
 export async function approveReceipt(receiptId: string) {
-  const auth = await requireRole(['finance', 'ceo'])
+  const auth = await requireRole(['ceo'])
   if (!auth) return { error: '권한이 없습니다.' }
 
   const supabase = auth.supabase
@@ -164,7 +164,7 @@ export async function updateReceipt(
 }
 
 export async function rejectReceipt(receiptId: string, comment: string) {
-  const auth = await requireRole(['finance', 'ceo'])
+  const auth = await requireRole(['ceo'])
   if (!auth) return { error: '권한이 없습니다.' }
 
   const supabase = auth.supabase
