@@ -5,7 +5,7 @@ import { type Database, EmployeeRole } from '@/types/database'
 const ROUTE_PERMISSIONS: { prefix: string; allowed: EmployeeRole[] }[] = [
   { prefix: '/dashboard', allowed: ['ceo'] },
   { prefix: '/approvals', allowed: ['finance', 'ceo'] },
-  { prefix: '/submit', allowed: ['staff', 'ceo'] },
+  { prefix: '/submit', allowed: ['staff', 'finance', 'ceo'] },
   { prefix: '/transactions', allowed: ['ceo', 'finance'] },
   { prefix: '/budgets', allowed: ['ceo', 'finance'] },
   { prefix: '/reports', allowed: ['ceo', 'finance'] },

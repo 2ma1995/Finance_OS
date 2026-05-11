@@ -66,7 +66,7 @@ async function sendSlackRejectionDM(
 }
 
 export async function submitReceipt(data: Omit<ReceiptInsert, 'employee_id' | 'employee_name' | 'department'>) {
-  const auth = await requireRole(['staff', 'ceo'])
+  const auth = await requireRole(['staff', 'finance', 'ceo'])
   if (!auth) return { error: '권한이 없습니다.' }
 
   // 기본 입력값 검증

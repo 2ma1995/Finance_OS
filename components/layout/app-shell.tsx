@@ -19,9 +19,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   if (!data?.role) redirect("/auth/login")
 
-  // staff는 미읽은 반려 건수 조회
+  // 영수증 제출 가능한 역할의 미읽은 반려 건수 조회
   let unreadRejections = 0
-  if (data.role === 'staff' || data.role === 'ceo') {
+  if (data.role === 'staff' || data.role === 'finance' || data.role === 'ceo') {
     const { count } = await rawSupabase(supabase)
       .from('receipts')
       .select('id', { count: 'exact', head: true })
