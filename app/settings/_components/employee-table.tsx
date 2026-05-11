@@ -18,11 +18,26 @@ const ROLE_LABEL: Record<EmployeeRole, string> = {
   staff: '일반직원',
 }
 
-function EditDialog({ employee }: { employee: Employee }) {
+const CUSTOM = '__custom__'
+
+function EditDialog({ employee, departments }: { employee: Employee; departments: string[] }) {
   const [open, setOpen] = useState(false)
   const [role, setRole] = useState<EmployeeRole>(employee.role)
-  const [department, setDepartment] = useState(employee.department ?? '')
+  const [deptSelect, setDeptSelect] = useState<string>(
+    employee.department
+      ? departments.includes(employee.department)
+        ? employee.department
+        : CUSTOM
+      : ''
+  )
+  const [customDept, setCustomDept] = useState(
+    employee.department && !departments.includes(employee.department)
+      ? employee.department
+      : ''
+  )
   const [loading, setLoading] = useState(false)
+
+  const department = deptSelect === CUSTOM ? customDept.trim() : deptSelect
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,13 +84,26 @@ function EditDialog({ employee }: { employee: Employee }) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="dept">부서</Label>
-            <Input
-              id="dept"
-              placeholder="예: 개발팀, 영업팀"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-            />
+            <Label>부서</Label>
+            <Select value={deptSelect} onValueChange={(v) => setDeptSelect(v ?? '')}>
+              <SelectTrigger>
+                <SelectValue placeholder="부서 없음" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">부서 없음</SelectItem>
+                {departments.map((d) => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+                <SelectItem value={CUSTOM}>직접 입력</SelectItem>
+              </SelectContent>
+            </Select>
+            {deptSelect === CUSTOM && (
+              <Input
+                placeholder="부서명 직접 입력"
+                value={customDept}
+                onChange={(e) => setCustomDept(e.target.value)}
+              />
+            )}
           </div>
           <div className="flex justify-between gap-2">
             <Button
@@ -97,7 +125,7 @@ function EditDialog({ employee }: { employee: Employee }) {
   )
 }
 
-export function EmployeeTable({ employees }: { employees: Employee[] }) {
+export function EmployeeTable({ employees, departments }: { employees: Employee[]; departments: string[] }) {
   return (
     <Table>
       <TableHeader>
@@ -134,7 +162,7 @@ export function EmployeeTable({ employees }: { employees: Employee[] }) {
               </Badge>
             </TableCell>
             <TableCell>
-              <EditDialog employee={emp} />
+              <EditDialog employee={emp} departments={departments} />
             </TableCell>
           </TableRow>
         ))}

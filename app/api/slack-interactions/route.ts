@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase-server'
+import { rawSupabase } from '@/lib/utils'
 
 function verifySlackSignature(body: string, timestamp: string, signature: string): boolean {
   const secret = process.env.SLACK_SIGNING_SECRET
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  const supabase = createServiceClient()
+  const supabase = rawSupabase(createServiceClient())
   const { error } = await supabase
     .from('receipts')
     .update({ category, is_manual_review: false })

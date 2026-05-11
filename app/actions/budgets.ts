@@ -1,6 +1,7 @@
 'use server'
 
 import { requireRole } from '@/lib/server-auth'
+import { rawSupabase } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 
 export async function upsertBudget(department: string, month: string, amount: number) {
@@ -9,7 +10,8 @@ export async function upsertBudget(department: string, month: string, amount: nu
 
   if (!amount || amount <= 0) return { error: '유효하지 않은 금액입니다.' }
 
-  const { error } = await auth.supabase
+  const db = rawSupabase(auth.supabase)
+  const { error } = await db
     .from('department_budgets')
     .upsert({ department, month, budget_amount: amount }, { onConflict: 'department,month' })
 

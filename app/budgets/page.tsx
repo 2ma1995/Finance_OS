@@ -20,7 +20,9 @@ export default async function BudgetsPage() {
   type SpendRow = { department: string; amount: number }
   type BudgetRow = { id: string; department: string; month: string; budget_amount: number }
 
-  const [{ data: spending }, { data: budgets }] = await Promise.all([
+  type EmpDeptRow = { department: string | null }
+
+  const [{ data: spending }, { data: budgets }, { data: empDepts }] = await Promise.all([
     db
       .from('receipts')
       .select('department, amount')
@@ -30,7 +32,15 @@ export default async function BudgetsPage() {
       .from('department_budgets')
       .select('*')
       .eq('month', currentMonth) as Promise<{ data: BudgetRow[] | null }>,
+    db
+      .from('employees')
+      .select('department')
+      .not('department', 'is', null) as Promise<{ data: EmpDeptRow[] | null }>,
   ])
+
+  const availableDepartments = Array.from(
+    new Set((empDepts ?? []).map((e) => e.department).filter(Boolean) as string[])
+  ).sort()
 
   // 부서별 지출 집계
   const spendMap: Record<string, number> = {}
@@ -70,6 +80,7 @@ export default async function BudgetsPage() {
         <AddBudgetDialog
           month={currentMonth}
           existingDepartments={departments}
+          availableDepartments={availableDepartments}
         />
       </div>
 

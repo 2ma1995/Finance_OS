@@ -10,12 +10,12 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   if (!user) redirect("/auth/login")
 
-  const { data } = await supabase
+  const { data } = await rawSupabase(supabase)
     .from("employees")
     .select("role")
     .eq("user_id", user.id)
     .eq("is_active", true)
-    .single()
+    .single() as { data: { role: EmployeeRole } | null }
 
   if (!data?.role) redirect("/auth/login")
 

@@ -2,6 +2,7 @@
 
 import { createServiceClient } from '@/lib/supabase-server'
 import { requireRole } from '@/lib/server-auth'
+import { rawSupabase } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 
 export async function addIncomeTransaction(data: {
@@ -16,7 +17,7 @@ export async function addIncomeTransaction(data: {
   if (!data.amount || data.amount <= 0) return { error: '유효하지 않은 금액입니다.' }
   if (!data.date || !/^\d{4}-\d{2}-\d{2}$/.test(data.date)) return { error: '유효하지 않은 날짜입니다.' }
 
-  const supabase = auth.supabase
+  const supabase = rawSupabase(auth.supabase)
 
   const { data: accounts } = await supabase
     .from('accounts')
