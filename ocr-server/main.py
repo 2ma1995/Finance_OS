@@ -266,7 +266,8 @@ def parse_merchant(lines: list[str]) -> str:
         if SKIP.search(t) or LOGO.match(t):
             continue
         cleaned = CORP.sub("", t).strip()
-        if len(cleaned) >= 2:
+        # 한글 또는 영문자가 없으면 상호명으로 사용 불가 (숫자/기호만 있는 줄 제외)
+        if len(cleaned) >= 2 and re.search(r'[가-힣a-zA-Z]', cleaned):
             return cleaned
 
     return ""

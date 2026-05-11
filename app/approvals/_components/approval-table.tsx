@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { approveReceipt } from '@/app/actions/receipts'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, receiptImageUrl } from '@/lib/utils'
 import { toast } from 'sonner'
 import type { Receipt } from '@/types/database'
 import { RejectModal } from './reject-modal'
@@ -186,7 +186,7 @@ export function ApprovalTable({ initial }: ApprovalTableProps) {
                     <TableCell>
                       {r.image_url ? (
                         <a
-                          href={r.image_url}
+                          href={receiptImageUrl(r.image_url) ?? r.image_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline inline-flex items-center gap-1"

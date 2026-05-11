@@ -6,6 +6,14 @@ import { twMerge } from "tailwind-merge"
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function rawSupabase(client: unknown) { return client as any }
 
+// Supabase storage URL → 서명된 URL 프록시 경로로 변환
+export function receiptImageUrl(imageUrl: string | null): string | null {
+  if (!imageUrl) return null
+  const match = imageUrl.match(/\/receipts\/(.+)$/)
+  if (!match) return imageUrl
+  return `/api/receipt-image?path=${encodeURIComponent(match[1])}`
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

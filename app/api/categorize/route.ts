@@ -24,7 +24,10 @@ function isAllowedImageUrl(url: string): boolean {
     return (
       parsed.protocol === 'https:' &&
       parsed.hostname === SUPABASE_STORAGE_HOST &&
-      parsed.pathname.startsWith('/storage/v1/object/public/receipts/')
+      (
+        parsed.pathname.startsWith('/storage/v1/object/public/receipts/') ||
+        parsed.pathname.startsWith('/storage/v1/object/sign/receipts/')
+      )
     )
   } catch {
     return false

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, receiptImageUrl } from '@/lib/utils'
 import type { Receipt, ReceiptStatus } from '@/types/database'
 import { ImageIcon, Pencil } from 'lucide-react'
 import { EditReceiptDialog } from '@/app/approvals/_components/edit-receipt-dialog'
@@ -106,7 +106,7 @@ export function MyReceiptsRealtime({ initial, userId }: MyReceiptsRealtimeProps)
                       <TableCell>
                         {r.image_url ? (
                           <a
-                            href={r.image_url}
+                            href={receiptImageUrl(r.image_url) ?? r.image_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary hover:underline inline-flex items-center gap-1 text-sm"

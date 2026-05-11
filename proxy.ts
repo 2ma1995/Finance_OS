@@ -47,8 +47,8 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = pathname === '/'
   const isApiRoute = pathname.startsWith('/api')
 
-  // Slack 경로는 HMAC 서명으로 자체 인증 — 익명 허용
-  const ANON_API = ['/api/slack-webhook', '/api/slack-interactions']
+  // Slack 경로는 HMAC 서명으로 자체 인증, categorize는 서버→서버 내부 호출 — 익명 허용
+  const ANON_API = ['/api/slack-webhook', '/api/slack-interactions', '/api/categorize']
   const isAnonApi = ANON_API.some((p) => pathname.startsWith(p))
 
   if (!user) {

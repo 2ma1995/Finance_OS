@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase-server'
+import { rawSupabase } from '@/lib/utils'
 
 function verifySlackSignature(body: string, timestamp: string, signature: string): boolean {
   const secret = process.env.SLACK_SIGNING_SECRET
@@ -82,7 +83,7 @@ async function extractReceiptInfo(imageUrl: string): Promise<OCRResult> {
 }
 
 async function processSlackMessage(event: SlackEvent) {
-  const supabase = createServiceClient()
+  const supabase = rawSupabase(createServiceClient())
 
   // 1. Slack 유저 이메일로 직원 조회
   const userRes = await fetch(`https://slack.com/api/users.info?user=${event.user}`, {
@@ -139,10 +140,17 @@ async function processSlackMessage(event: SlackEvent) {
 
   const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(uploadData.path)
 
-  // 3. GPT-4o Vision으로 금액 + 상호명 추출
+  // OCR용 URL: 버킷이 비공개면 서명된 URL 사용 (5분 유효)
+  let ocrUrl = publicUrl
+  const { data: signedData } = await supabase.storage
+    .from('receipts')
+    .createSignedUrl(uploadData.path, 300)
+  if (signedData?.signedUrl) ocrUrl = signedData.signedUrl
+
+  // 3. Vision OCR로 금액 + 상호명 추출
   await postSlackBlocks(event.channel, event.ts, '🔍 영수증을 분석 중입니다...')
 
-  const { amount, merchant, supply_value, vat, tax_free_amount } = await extractReceiptInfo(publicUrl)
+  const { amount, merchant, supply_value, vat, tax_free_amount } = await extractReceiptInfo(ocrUrl)
 
   // 금액 불일치 감지 → 스레드 경고
   if (amount > 0 && supply_value != null && vat != null) {
