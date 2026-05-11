@@ -40,6 +40,9 @@ export function ReceiptForm({ userId }: ReceiptFormProps) {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [memo, setMemo] = useState('')
   const [category, setCategory] = useState('미분류')
+  const [supplyValue, setSupplyValue] = useState('')
+  const [vat, setVat] = useState('')
+  const [taxFreeAmount, setTaxFreeAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +82,9 @@ export function ReceiptForm({ userId }: ReceiptFormProps) {
         setCategorizeResult(catData)
         if (catData.amount > 0) setAmount(String(catData.amount))
         if (catData.merchant) setMerchantName(catData.merchant)
+        if (catData.supply_value != null) setSupplyValue(String(catData.supply_value))
+        if (catData.vat != null) setVat(String(catData.vat))
+        if (catData.tax_free_amount != null) setTaxFreeAmount(String(catData.tax_free_amount))
         if (catData.ocr_failed) {
           toast.error('OCR 서버에 연결할 수 없습니다. 직접 입력해주세요.')
         } else {
@@ -108,9 +114,9 @@ export function ReceiptForm({ userId }: ReceiptFormProps) {
         image_url: imageUrl || null,
         category,
         is_manual_review: false,
-        supply_value: categorizeResult?.supply_value ?? null,
-        vat: categorizeResult?.vat ?? null,
-        tax_free_amount: categorizeResult?.tax_free_amount ?? null,
+        supply_value: supplyValue ? Number(supplyValue) : null,
+        vat: vat ? Number(vat) : null,
+        tax_free_amount: taxFreeAmount ? Number(taxFreeAmount) : null,
       })
 
       if (result?.error) {
@@ -123,6 +129,9 @@ export function ReceiptForm({ userId }: ReceiptFormProps) {
         setDate(new Date().toISOString().split('T')[0])
         setMemo('')
         setCategory('미분류')
+        setSupplyValue('')
+        setVat('')
+        setTaxFreeAmount('')
         setImageUrl('')
         setImagePreview('')
         setCategorizeResult(null)
@@ -215,6 +224,42 @@ export function ReceiptForm({ userId }: ReceiptFormProps) {
               onChange={(e) => setMerchantName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="supplyValue">공급가액</Label>
+              <Input
+                id="supplyValue"
+                type="number"
+                min={0}
+                placeholder="0"
+                value={supplyValue}
+                onChange={(e) => setSupplyValue(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="vat">부가세</Label>
+              <Input
+                id="vat"
+                type="number"
+                min={0}
+                placeholder="0"
+                value={vat}
+                onChange={(e) => setVat(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="taxFreeAmount">면세금액</Label>
+              <Input
+                id="taxFreeAmount"
+                type="number"
+                min={0}
+                placeholder="0"
+                value={taxFreeAmount}
+                onChange={(e) => setTaxFreeAmount(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
