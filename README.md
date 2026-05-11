@@ -2,10 +2,25 @@
 
 > Slack에 영수증 사진 한 장 올리면 OCR이 자동으로 지출을 기록하는 개인 재무 관리 시스템
 
-![Finance OS 시연 영상_slack](./assets/slack_1.gif)
-![Finance OS 시연 영상_영수증이미지](./assets/slack_2.gif)
-![Finance OS 시연 영상_영수증처리](./assets/slack_3.gif)
-![Finance OS 시연 영상_결과](./assets/page.png)
+<details>
+  <summary>1️. Slack 연동 시연</summary>
+  <img src="./assets/slack_1.gif">
+</details>
+
+<details>
+  <summary>2. 통계 대시보드 시연_영수증확인</summary>
+  <img src="./assets/slack_2.gif">
+</details>
+
+<details>
+  <summary>3. 통계 대시보드 시연_영수증처리</summary>
+  <img src="./assets/slack_3.gif">
+</details>
+
+<details>
+  <summary>4. 통계 대시보드 시연_완료</summary>
+  <img src="./assets/page.png">
+</details>
 
 
 ---
