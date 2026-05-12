@@ -43,7 +43,8 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const isAuthRoute = pathname.startsWith('/auth')
+  const isSetPassword = pathname === '/auth/set-password'
+  const isAuthRoute = pathname.startsWith('/auth') && !isSetPassword
   const isPublicRoute = pathname === '/'
   const isApiRoute = pathname.startsWith('/api')
 
@@ -79,6 +80,12 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthRoute) {
     return NextResponse.redirect(new URL(ROLE_HOME[role], request.url))
+  }
+
+  // 최초 로그인 시 비밀번호 변경 강제
+  const mustChange = user.user_metadata?.must_change_password === true
+  if (mustChange && !isSetPassword) {
+    return NextResponse.redirect(new URL('/auth/set-password', request.url))
   }
 
   const permission = ROUTE_PERMISSIONS.find(({ prefix }) => pathname.startsWith(prefix))

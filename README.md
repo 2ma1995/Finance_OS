@@ -3,6 +3,8 @@
 > 사내 경비 관리 자동화 시스템 — Slack 영수증 업로드부터 결재·정산까지
 
 <details>
+  <summary>슬랙 영수증 시연</summary>
+<details>
   <summary>1️. Slack 연동 시연</summary>
   <img src="./assets/slack_1.gif">
 </details>
@@ -21,7 +23,44 @@
   <summary>4. 통계 대시보드 시연_완료</summary>
   <img src="./assets/page.png">
 </details>
-
+</details>
+<details>
+    <summary>대시보드 시연</summary>
+    <details>
+        <summary>대시보드</summary>
+        <img src="./assets/dashboard.gif">
+    </details>
+    <details>
+        <summary>결재 관리(반려)</summary>
+        <img src="./assets/returnpay.gif">
+        <img src="./assets/returnpay2.gif">
+    </details>
+    <details>
+        <summary>지출 신청</summary>
+        <img src="./assets/paybill.gif">
+    </details>
+    <details>
+        <summary>거래 내역(매출)</summary>
+        <img src="./assets/plusmoney.gif">
+    </details>
+    <details>
+        <summary>예산 관리</summary>
+        <img src="./assets/setbudget.gif">
+    </details>
+    <details>
+        <summary>리포트</summary>
+        <img src="./assets/report.gif">
+    </details>
+    <details>
+        <summary>설정(직원추가)</summary>
+        <img src="./assets/newemployee.gif">
+        <img src="./assets/newemployee2.gif">
+    </details>
+    <details>
+        <summary>설정(부서이동)</summary>
+        <img src="./assets/changejob.gif">
+    </details>
+</details>
 ---
 
 ## 📌 프로젝트 소개
@@ -35,12 +74,14 @@
 ## ✨ 전체 기능
 
 ### 1. Slack 영수증 자동 처리
+
 - Slack 채널에 영수증 이미지 업로드 → Webhook으로 자동 수신
 - Google Cloud Vision OCR로 금액·상호명·공급가액·부가세·면세금액 추출
 - 인식 완료 후 카테고리 선택 버튼을 Slack 스레드로 전송
 - OCR 검증 불일치(공급가액+부가세 ≠ 합계) 시 알림 채널에 경고 메시지 발송
 
 ### 2. 웹 폼 영수증 제출 (직원·재무)
+
 - 영수증 이미지 업로드 → OCR 자동 인식 후 금액·상호명 자동 입력
 - 공급가액·부가세·면세금액도 OCR 인식 후 자동 입력, 수동 수정 가능
 - 카테고리 선택 및 메모 입력 후 제출
@@ -49,6 +90,7 @@
 - 반려 시 Slack DM으로 반려 사유 자동 알림
 
 ### 3. 결재 관리 (재무·CEO, 계층적 구조)
+
 - **재무팀**: 직원(staff) 및 CEO가 제출한 영수증 승인·반려
 - **CEO**: 재무팀(finance)이 제출한 영수증 및 본인 영수증 승인·반려
 - 부서·카테고리·날짜 범위로 필터링
@@ -58,31 +100,38 @@
 - 반려 시 제출자에게 Slack DM 자동 발송
 
 ### 4. 대시보드 (CEO)
+
 - 총 수입·지출·순이익 KPI 카드
 - 부서별 예산 대비 지출 바 차트
 - 카테고리별 지출 도넛 차트
 - 최근 영수증 실시간 목록
 
 ### 5. 거래내역 관리 (재무·CEO)
+
 - 수입·지출 전체 거래 조회
 - 수입 직접 등록
 - 거래 삭제 (확인 문구 입력 방식으로 이중 확인)
 - 행 클릭 시 상세 정보 표시 (영수증 이미지 링크 포함)
 
 ### 6. 예산 관리 (재무·CEO)
+
 - 부서별 월별 예산 설정 및 수정
 - 부서 추가 시 DB에 등록된 직원 부서 목록을 드롭다운으로 표시
 - 예산 대비 실지출 현황 확인
 
 ### 7. 직원·부서 관리 (CEO)
+
+- 직원 추가 (이름·이메일·역할·부서 입력 → 초기 비밀번호 `000000` 자동 발급)
+- 최초 로그인 시 비밀번호 변경 강제 (미들웨어 리다이렉트)
 - 직원 목록 조회
 - 역할 변경 (CEO / 재무 / 직원)
 - 재직 상태 활성·비활성 전환
 - 부서 추가 및 직원별 부서 배정 (부서별 소속 인원 현황 카드 제공)
 
 ### 8. 보고서 (재무·CEO)
-- 월별 수입·지출 집계
-- 카테고리별 지출 상세 내역
+
+- **월별 탭**: 특정 월 수입·지출·순이익 KPI, 부서별 예산 집행 바 차트, 카테고리 도넛 차트, 부서별 지출 상세 테이블
+- **연간 탭**: 연도 이동(← →), 연간 수입·지출·순이익 KPI, 12개월 수입·지출 추이 바 차트, 카테고리 도넛 차트, 부서별 연간 지출 테이블
 
 ---
 
@@ -98,31 +147,31 @@
 
 ## 👥 역할별 접근 권한
 
-| 기능 | 직원 (staff) | 재무 (finance) | CEO |
-|------|:---:|:---:|:---:|
-| 영수증 제출 | ✅ | ✅ | ✅ |
-| 내 영수증 조회·수정 | ✅ | ✅ | ✅ |
-| 결재 — 직원·CEO 영수증 승인·반려 | | ✅ | |
-| 결재 — 재무팀·본인 영수증 승인·반려 | | | ✅ |
-| 거래내역 | | ✅ | ✅ |
-| 예산 관리 | | ✅ | ✅ |
-| 보고서 | | ✅ | ✅ |
-| 대시보드 | | | ✅ |
-| 직원·부서 관리 | | | ✅ |
+| 기능                                | 직원 (staff) | 재무 (finance) | CEO |
+| ----------------------------------- | :----------: | :------------: | :-: |
+| 영수증 제출                         |      ✅      |       ✅       | ✅  |
+| 내 영수증 조회·수정                 |      ✅      |       ✅       | ✅  |
+| 결재 — 직원·CEO 영수증 승인·반려    |              |       ✅       |     |
+| 결재 — 재무팀·본인 영수증 승인·반려 |              |                | ✅  |
+| 거래내역                            |              |       ✅       | ✅  |
+| 예산 관리                           |              |       ✅       | ✅  |
+| 보고서                              |              |       ✅       | ✅  |
+| 대시보드                            |              |                | ✅  |
+| 직원·부서 관리                      |              |                | ✅  |
 
 ---
 
 ## 🛠️ 기술 스택
 
-| 영역 | 기술 |
-|------|------|
-| **Frontend** | Next.js 15 App Router, React 19, TypeScript |
-| **UI** | shadcn/ui, Tailwind CSS, Recharts |
-| **Backend** | Next.js API Routes, Server Actions |
-| **Database** | Supabase (PostgreSQL + Realtime) |
-| **OCR** | Python FastAPI, Google Cloud Vision API |
-| **자동화** | Slack Bot API, Event Subscriptions, Interactivity |
-| **인프라** | Docker Compose, ngrok |
+| 영역         | 기술                                              |
+| ------------ | ------------------------------------------------- |
+| **Frontend** | Next.js 15 App Router, React 19, TypeScript       |
+| **UI**       | shadcn/ui, Tailwind CSS, Recharts                 |
+| **Backend**  | Next.js API Routes, Server Actions                |
+| **Database** | Supabase (PostgreSQL + Realtime)                  |
+| **OCR**      | Python FastAPI, Google Cloud Vision API           |
+| **자동화**   | Slack Bot API, Event Subscriptions, Interactivity |
+| **인프라**   | Docker Compose, ngrok                             |
 
 ---
 
@@ -202,9 +251,9 @@ ngrok http 3000
 
 ngrok 실행 후 출력되는 URL을 Slack App에 등록:
 
-| 항목 | URL |
-|------|-----|
-| Event Subscriptions | `https://xxxx.ngrok-free.app/api/slack-webhook` |
+| 항목                      | URL                                                  |
+| ------------------------- | ---------------------------------------------------- |
+| Event Subscriptions       | `https://xxxx.ngrok-free.app/api/slack-webhook`      |
 | Interactivity & Shortcuts | `https://xxxx.ngrok-free.app/api/slack-interactions` |
 
 ---
@@ -217,18 +266,22 @@ Finance_OS/
 │   ├── actions/          # Server Actions (receipts, transactions, budgets, employees)
 │   ├── api/              # API Routes (categorize, slack-webhook, slack-interactions, receipt-image)
 │   ├── approvals/        # 결재 관리 페이지
+│   ├── auth/
+│   │   ├── callback/     # Supabase 인증 콜백
+│   │   ├── login/        # 로그인 페이지
+│   │   └── set-password/ # 최초 로그인 비밀번호 설정 페이지
 │   ├── dashboard/        # 대시보드
-│   ├── submit/           # 영수증 제출 (직원)
-│   ├── transactions/     # 거래내역
+│   ├── submit/           # 영수증 제출 (직원·재무·CEO)
+│   ├── transactions/     # 거래내역 (월별 필터·KPI)
 │   ├── budgets/          # 예산 관리
-│   ├── reports/          # 보고서
-│   └── settings/         # 직원·부서 관리
+│   ├── reports/          # 보고서 (월별·연간 탭)
+│   └── settings/         # 직원·부서 관리 (직원 추가 포함)
 ├── components/           # 재사용 UI 컴포넌트
 ├── lib/                  # Supabase 클라이언트, 인증 유틸
 ├── ocr-server/           # Python FastAPI OCR 서버
 ├── types/                # TypeScript 타입 정의
 ├── docker-compose.yml    # OCR 서버 컨테이너
-└── proxy.ts              # 미들웨어 (인증·역할 기반 라우팅)
+└── proxy.ts              # 미들웨어 (인증·역할·비밀번호 변경 강제 라우팅)
 ```
 
 ---

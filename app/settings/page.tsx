@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { EmployeeTable } from './_components/employee-table'
 import { DepartmentSection } from './_components/department-section'
+import { AddEmployeeDialog } from './_components/add-employee-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Employee } from '@/types/database'
 
@@ -20,9 +21,12 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">설정</h1>
-        <p className="text-sm text-muted-foreground mt-1">직원 역할 및 부서를 관리합니다.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">설정</h1>
+          <p className="text-sm text-muted-foreground mt-1">직원 역할 및 부서를 관리합니다.</p>
+        </div>
+        <AddEmployeeDialog departments={departments} />
       </div>
 
       <DepartmentSection employees={empList} departments={departments} />
