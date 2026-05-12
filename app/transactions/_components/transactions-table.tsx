@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteTransaction } from '@/app/actions/transactions'
 import { deleteReceipt } from '@/app/actions/receipts'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { ImageIcon, Trash2 } from 'lucide-react'
+import { ImageIcon, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 
 export type TransactionRow = {
@@ -35,6 +35,21 @@ function fmt(amount: number) {
   return amount.toLocaleString('ko-KR') + '원'
 }
 
+function toYearMonth(date: string) {
+  return date.slice(0, 7) // 'YYYY-MM'
+}
+
+function formatYearMonth(ym: string) {
+  const [y, m] = ym.split('-')
+  return `${y}년 ${Number(m)}월`
+}
+
+function addMonth(ym: string, delta: number) {
+  const [y, m] = ym.split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   if (!value) return null
   return (
@@ -55,10 +70,30 @@ const CONFIRM_KEYWORD = '삭제'
 
 export function TransactionsTable({ rows }: { rows: TransactionRow[] }) {
   const router = useRouter()
+
+  const now = new Date()
+  const [month, setMonth] = useState(
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  )
+
   const [selected, setSelected] = useState<TransactionRow | null>(null)
   const [confirmText, setConfirmText] = useState('')
   const [showConfirm, setShowConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const filtered = useMemo(
+    () => rows.filter((r) => toYearMonth(r.date) === month),
+    [rows, month]
+  )
+
+  const totalIncome = useMemo(
+    () => filtered.filter((r) => r.type === 'income').reduce((s, r) => s + r.amount, 0),
+    [filtered]
+  )
+  const totalExpense = useMemo(
+    () => filtered.filter((r) => r.type === 'expense' && r.status === 'approved').reduce((s, r) => s + r.amount, 0),
+    [filtered]
+  )
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -95,6 +130,49 @@ export function TransactionsTable({ rows }: { rows: TransactionRow[] }) {
 
   return (
     <>
+      {/* 월 네비게이터 + KPI */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => setMonth((m) => addMonth(m, -1))}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-base font-semibold w-32 text-center">{formatYearMonth(month)}</span>
+          <Button variant="outline" size="icon" onClick={() => setMonth((m) => addMonth(m, 1))}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex gap-3">
+          <Card className="min-w-36">
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">수입</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className="text-lg font-bold text-blue-600">{fmt(totalIncome)}</p>
+            </CardContent>
+          </Card>
+          <Card className="min-w-36">
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">지출 (승인)</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className="text-lg font-bold text-red-500">{fmt(totalExpense)}</p>
+            </CardContent>
+          </Card>
+          <Card className="min-w-36">
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">순이익</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-3 px-4">
+              <p className={`text-lg font-bold ${totalIncome - totalExpense >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                {fmt(totalIncome - totalExpense)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* 거래 목록 */}
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -107,14 +185,14 @@ export function TransactionsTable({ rows }: { rows: TransactionRow[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length === 0 && (
+              {filtered.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                    거래 내역이 없습니다.
+                    {formatYearMonth(month)} 거래 내역이 없습니다.
                   </TableCell>
                 </TableRow>
               )}
-              {rows.map((row) => (
+              {filtered.map((row) => (
                 <TableRow
                   key={`${row.type}-${row.id}`}
                   className="cursor-pointer hover:bg-muted/50"
@@ -140,6 +218,7 @@ export function TransactionsTable({ rows }: { rows: TransactionRow[] }) {
         </CardContent>
       </Card>
 
+      {/* 상세 다이얼로그 */}
       <Dialog open={!!selected} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
