@@ -67,7 +67,7 @@
 
 **Finance OS**는 사내 경비 처리를 자동화하는 재무 관리 시스템입니다.
 
-직원·재무팀이 Slack 또는 웹 폼으로 영수증을 제출하면 Google Cloud Vision OCR이 금액·상호명·공급가액·부가세·면세금액을 자동 추출합니다. 계층적 결재 구조로 직원·CEO 영수증은 재무팀이, 재무팀·CEO 본인 영수증은 CEO가 승인·반려합니다. CEO·재무·직원 세 가지 역할에 따라 접근 권한이 분리되고 실시간으로 데이터가 동기화됩니다.
+직원·재무팀이 Slack 또는 웹 폼으로 영수증을 제출하면 PaddleOCR과 로컬 LLM이 금액·상호명·공급가액·부가세·면세금액을 자동 추출합니다. 계층적 결재 구조로 직원·CEO 영수증은 재무팀이, 재무팀·CEO 본인 영수증은 CEO가 승인·반려합니다. CEO·재무·직원 세 가지 역할에 따라 접근 권한이 분리되고 실시간으로 데이터가 동기화됩니다.
 
 ---
 
@@ -76,7 +76,7 @@
 ### 1. Slack 영수증 자동 처리
 
 - Slack 채널에 영수증 이미지 업로드 → Webhook으로 자동 수신
-- Google Cloud Vision OCR로 금액·상호명·공급가액·부가세·면세금액 추출
+- PaddleOCR(+ 로컬 LLM 보정)로 금액·상호명·공급가액·부가세·면세금액 추출
 - 인식 완료 후 카테고리 선택 버튼을 Slack 스레드로 전송
 - OCR 검증 불일치(공급가액+부가세 ≠ 합계) 시 알림 채널에 경고 메시지 발송
 
@@ -145,6 +145,24 @@
 
 ---
 
+## 🔍 OCR 파이프라인
+
+유료 Google Cloud Vision 대신 **PaddleOCR + 로컬 LLM**으로 비용 없이 로컬에서 영수증을 인식합니다.
+
+```
+이미지 → 전처리(영역 자르기·기울기 보정·대비 강화) → PaddleOCR(PP-OCRv5 한국어)
+      → 줄 단위 재구성 → 정규식 파싱 → 신뢰도 계산
+      → 신뢰도 < 0.7 이면 qwen3:4b(Ollama)로 재추출 → 규칙 검증 통과한 값만 채택
+```
+
+- **LLM 결과 검증**: LLM이 제안한 숫자가 OCR 텍스트에 실제로 있고, 공급가액+부가세(+면세)가 합계와 맞을 때만 채택합니다. 그럴듯한 오답(환각)을 막기 위한 장치입니다.
+- **폴백**: Ollama가 없거나 오류가 나면 LLM 단계를 건너뛰고 OCR 결과로 응답합니다.
+- **측정 (실제 영수증 2장)**: 상호명·합계·공급가액·부가세·면세 5개 항목 모두 정답. 스캔본 약 6초, 폰 사진 약 17초 (LLM 보정 2.7초 포함, GTX 1060)
+
+자세한 설계 과정은 [OCR_개선_계획.md](./OCR_개선_계획.md)를 참고하세요.
+
+---
+
 ## 👥 역할별 접근 권한
 
 | 기능                                | 직원 (staff) | 재무 (finance) | CEO |
@@ -169,7 +187,7 @@
 | **UI**       | shadcn/ui, Tailwind CSS, Recharts                 |
 | **Backend**  | Next.js API Routes, Server Actions                |
 | **Database** | Supabase (PostgreSQL + Realtime)                  |
-| **OCR**      | Python FastAPI, Google Cloud Vision API           |
+| **OCR**      | Python FastAPI, PaddleOCR (PP-OCRv5 한국어), Ollama (qwen3:4b) |
 | **자동화**   | Slack Bot API, Event Subscriptions, Interactivity |
 | **인프라**   | Docker Compose, ngrok                             |
 
@@ -182,7 +200,7 @@
 2. Slack이 ngrok URL로 Webhook 이벤트 전송
 3. Next.js /api/slack-webhook 수신 → Supabase Storage에 이미지 저장
 4. Python OCR 서버(Docker, Port 8000)로 이미지 전달
-5. Google Cloud Vision API → 금액·상호명·공급가액·부가세 추출
+5. PaddleOCR → 금액·상호명·공급가액·부가세 추출 (신뢰도 낮으면 로컬 LLM이 보정)
 6. 추출 데이터를 Supabase DB에 저장
 7. Slack 스레드에 카테고리 선택 버튼 전송
 8. 직원이 버튼 클릭 → /api/slack-interactions → 카테고리 업데이트
@@ -199,7 +217,7 @@
 - Docker & Docker Compose
 - Supabase 프로젝트
 - Slack App (Bot Token, Signing Secret)
-- Google Cloud Vision API (서비스 계정 또는 ADC)
+- Ollama + `ollama pull qwen3:4b` (선택, 없으면 LLM 보정 없이 동작)
 - ngrok
 
 ### 환경변수 설정
@@ -222,10 +240,9 @@ OCR_SERVER_URL=http://localhost:8000
 SLACK_BOT_TOKEN=xoxb-your-bot-token
 SLACK_SIGNING_SECRET=your-signing-secret
 SLACK_ALERT_CHANNEL=C0XXXXXXXXX
-
-# Google Cloud Vision
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 ```
+
+> Windows에서 OCR 서버를 Docker 없이 실행할 때 사용자 폴더 경로에 한글이 있으면 Paddle 모델 로딩이 실패합니다. `PADDLE_PDX_CACHE_HOME=C:\paddlex_cache`처럼 영문 경로를 지정하세요.
 
 ### 실행 순서
 
@@ -237,7 +254,7 @@ cd Finance_OS
 # 2. 패키지 설치
 npm install
 
-# 3. OCR 서버 실행 (Docker)
+# 3. OCR 서버 실행 (Docker) — LLM 보정을 쓰려면 먼저 Ollama 실행 후 `ollama pull qwen3:4b`
 docker-compose up -d
 
 # 4. Next.js 앱 실행
@@ -278,7 +295,10 @@ Finance_OS/
 │   └── settings/         # 직원·부서 관리 (직원 추가 포함)
 ├── components/           # 재사용 UI 컴포넌트
 ├── lib/                  # Supabase 클라이언트, 인증 유틸
-├── ocr-server/           # Python FastAPI OCR 서버
+├── ocr-server/           # Python FastAPI OCR 서버 (PaddleOCR + Ollama)
+│   ├── main.py           # 전처리·OCR·파싱·LLM 보정
+│   ├── test_parsing.py   # 파싱·신뢰도·LLM 병합 단위 테스트 (모델 로딩 없이 실행)
+│   └── eval_receipts.py  # receipts/ + expected.json으로 정확도 측정 (--llm 옵션)
 ├── types/                # TypeScript 타입 정의
 ├── docker-compose.yml    # OCR 서버 컨테이너
 └── proxy.ts              # 미들웨어 (인증·역할·비밀번호 변경 강제 라우팅)

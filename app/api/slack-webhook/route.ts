@@ -147,7 +147,7 @@ async function processSlackMessage(event: SlackEvent) {
     .createSignedUrl(uploadData.path, 300)
   if (signedData?.signedUrl) ocrUrl = signedData.signedUrl
 
-  // 3. Vision OCR로 금액 + 상호명 추출
+  // 3. OCR로 금액 + 상호명 추출
   await postSlackBlocks(event.channel, event.ts, '🔍 영수증을 분석 중입니다...')
 
   const { amount, merchant, supply_value, vat, tax_free_amount } = await extractReceiptInfo(ocrUrl)

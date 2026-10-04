@@ -8,9 +8,13 @@ services:
       - "8000:8000"
     environment:
       - ALLOWED_ORIGINS=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3:4b}
+      - PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
     volumes:
-      - ~/.config/gcloud:/root/.config/gcloud:ro
+      - paddlex-models:/root/.paddlex
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -18,3 +22,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+volumes:
+  paddlex-models:

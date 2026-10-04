@@ -1,4 +1,6 @@
-google-cloud-vision==3.7.2
+# paddlepaddle 3.3.x는 CPU oneDNN 버그(ConvertPirAttribute2RuntimeAttribute)로 3.2.2 고정
+paddlepaddle==3.2.2
+paddleocr==3.7.0
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 httpx==0.27.2
