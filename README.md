@@ -2,9 +2,9 @@
 
 > 사내 경비 관리 자동화 시스템 — Slack 영수증 업로드부터 결재·정산까지
 
-<details>
+<details open>
   <summary>슬랙 영수증 시연</summary>
-<details>
+<details open>
   <summary>1️. Slack 연동 시연</summary>
   <img src="./assets/slack_1.gif">
 </details>
